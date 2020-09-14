@@ -6,18 +6,34 @@
 // @author       You
 // @match        https://yandex.ru/*
 // @match        https://xn----7sbab5aqcbiddtdj1e1g.xn--p1ai/*
+// @match        https://crushdrummers.ru/*
 // @grant        none
 // ==/UserScript==
 
+let sites = {
+    "xn----7sbab5aqcbiddtdj1e1g.xn--p1ai":['Гобой','Как звучит флейта', 'Кларнет','Саксофон','Тромбон','Валторна'],
+    "crushdrummers.ru":['Барабанное шоу','Заказать барабанное шоу','Шоу барабанщиков в Москве']
+};
+let site = Object.keys(sites)[getRandom(0,Object.keys(sites).length)];
 let yandexInput = document.getElementById('text');
-// let googleInput = document.getElementsByName('q')[0];
-let keywords = ['Гобой','Как звучит флейта', 'Кларнет','Саксофон','Тромбон','Валторна'];
+let googleInput = document.getElementsByName('q')[0];
+
+let keywords = sites[site];
 let keyword = keywords[getRandom(0,keywords.length)];
 let btnK = document.querySelectorAll('.button_theme_websearch')[0];
 let i = 0;
 let links = document.links;
 
 if (btnK != undefined){
+    document.cookie = "site="+site;
+}else if (location.hostname == "yandex.ru"){
+    site = getCookie("site");
+}else{
+    site = location.hostname;
+}
+
+if (btnK != undefined){
+    document.cookie = "site="+site;
     let timerId = setInterval(()=>{
         yandexInput.value += keyword[i];
         i++;
@@ -26,20 +42,20 @@ if (btnK != undefined){
             btnK.click();
         }
     },1000);
-}else if(location.hostname == "xn----7sbab5aqcbiddtdj1e1g.xn--p1ai"){
+}else if(location.hostname == site){
     setInterval(()=>{
         let index = getRandom(0,links.length);
         if (getRandom(0,101)>=80){
             location.href = 'https://yandex.ru/';
         }
-        else if (links[index].href.indexOf("xn----7sbab5aqcbiddtdj1e1g.xn--p1ai") != -1) {
+        else if (links[index].href.indexOf(site) != -1) {
             links[index].removeAttribute('target');
             links[index].click();}
     },getRandom(3000,7000));
 }else{
     let nextYandexPage = true;
     for(let i=0; i<links.length; i++){
-        if(links[i].href.indexOf("xn----7sbab5aqcbiddtdj1e1g.xn--p1ai") != -1){
+        if(links[i].href.indexOf(site) != -1){
             let link = links[i];
             link.removeAttribute('target');
             nextYandexPage = false;
@@ -60,4 +76,10 @@ if (btnK != undefined){
 
 function getRandom(min,max){
     return Math.floor(Math.random()*(max-min)+min);
+}
+function getCookie(name) {
+  let matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
 }
